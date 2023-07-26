@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>後出し負けジャンケン</title>
+  <style>
+    body { text-align: center; }
+    #game-container { margin-top: 50px; }
+    #output { font-size: 20px; margin-top: 20px; }
+    .open {
+	cursor:pointer;
+}
+#pop-up {
+	display: none;
+}
+.overlay {
+	display: none;
+}
+#pop-up:checked + .overlay {
+	display: block;
+	position: fixed;
+	width: 100%;
+	height: 100vh;
+	top: 0;
+	left: 0;
+	z-index: 9999;
+	background: rgba(0, 0, 0, 0.6);
+}
+.window {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	width: 90vw;
+	max-width: 360px;
+    padding: 20px;
+	height: 300px;
+	background-color: #fff;
+	border-radius: 4px;
+	align-items: center;
+	transform: translate(-50%, -50%);
+}
+.close {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	cursor:pointer;
+}
+  </style>
+</head>
+<body>
+  <h1>後出し負けジャンケン</h1>
+<label class="open" for="pop-up">ポップアップ表示</label>
+<input type="checkbox" id="pop-up">
+<div class="overlay">
+	<div class="window">
+		<label class="close" for="pop-up">閉じる</label>
+		<h4>ポップアップウィンドウ</h4>
+		<p>この窓が表示されている間は窓の外の操作はできません。ウィンドウを閉じて操作して下さい。</p>
+	</div>
+</div>
+<br><br>
+  <button id="start-button" onclick="startGame()">スタート</button>
+  <div id="game-container" style="display: none;">
+    <div id="timer">30</div>
+    <div id="hand-display">グー</div>
+    <div id="test1"></div>
+    <div id="test"></div>
+  </div>
+  <div id="output"></div>
+  <div id="output1"></div>
+    <p id="message"></p>
+
+  
+
+    <div style="position: relative;">
+      <video id="webcam" style="position:absolute;left:0px;top:0px;width:50%;height:auto" autoplay playsinline></video>
+      <div id="canvas" style="position:absolute;left:0px;top:0px">
+      </div>
+    </div>
+
+
+    <script src="./js/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="./js/hands.js" crossorigin="anonymous"></script>
+    <script src="./js/p5.js"></script>
+    <script src="./js/sketch.js"></script>
+    <script type="module" src="./js/script.js"></script>
+
+
+
+  <script>
+    let timerInterval;
+    let countdown;
+    let losses;
+    let brainAge;
+
+    function startGame() {
+      document.getElementById("start-button").disabled = true;
+      document.getElementById("game-container").style.display = "block";
+      document.getElementById("output").innerHTML = "";
+      losses = 0;
+      brainAge = 80;
+      countdown = 30;
+      updateTimer();
+      timerInterval = setInterval(updateTimer, 1000);
+      showRandomHand();
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    function updateTimer() {
+      document.getElementById("timer").innerText = countdown;
+      countdown--;
+      if (countdown < 0) {
+        clearInterval(timerInterval);
+        document.removeEventListener("keydown", handleKeyDown);
+        endGame();
+      }
+    }
+
+    function showRandomHand() {
+      const hands = ["グー", "パー", "チョキ"];
+      const randomIndex = Math.floor(Math.random() * hands.length);
+      const randomHand = hands[randomIndex];
+      document.getElementById("hand-display").innerText = randomHand;
+    }
+
+    function endGame() {
+      document.getElementById("game-container").style.display = "none";
+
+      if (losses <= 3) {
+        brainAge = 80;
+      } else {
+        brainAge = Math.max(20, 80 - Math.floor(losses / 2));
+      }
+
+      document.getElementById("output").innerText = `脳年齢: ${brainAge}歳`;
+      document.getElementById("start-button").disabled = false;
+      document.getElementById("output1").innerText = `負けた回数: ${losses}`;
+      document.getElementById("start-button").disabled = false;
+    }
+
+    function checkLose(userHand, cpuHand) {
+      document.getElementById("test1").innerText= userHand;
+      if (
+        (userHand === "Closed_Fist" && cpuHand === "パー") ||
+        (userHand === "Open_Palm" && cpuHand === "チョキ") ||
+        (userHand === "Victory" && cpuHand === "グー")
+      ) {
+        return true;
+      }
+      return false;
+    }
+    function handleKeyDown(event) {
+      if (event.keyCode === 13) {
+        const userHand = document.getElementById("test").innerText.trim();
+        const cpuHand = document.getElementById("hand-display").innerText;
+        const isLose = checkLose(userHand, cpuHand);
+        if (isLose) {
+          document.getElementById("timer").style.backgroundColor = "blue";
+          setTimeout(function() {
+            document.getElementById("timer").style.backgroundColor = "white";
+          }, 800);
+          losses++;
+        } else {
+          document.getElementById("timer").style.backgroundColor = "red";
+          setTimeout(function() {
+            document.getElementById("timer").style.backgroundColor = "white";
+          }, 800);
+        }
+        showRandomHand();
+      }
+    }
+  </script>
+
+
+
+
+  </body>
+
+</html>
