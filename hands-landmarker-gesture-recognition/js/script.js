@@ -9,20 +9,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
-import { HandLandmarker, FilesetResolver } from "./vision_bundle.js";
+import { GestureRecognizer, FilesetResolver } from "./vision_bundle.js";
 document.getElementById("message").innerHTML = "Loading model...";
-let handLandmarker = undefined;
-let runningMode = "IMAGE";
+let gestureRecognizer = undefined;
+let runningMode = "VIDEO";
 let enableWebcamButton;
 let webcamRunning = false;
 // Before we can use HandLandmarker class we must wait for it to finish
 // loading. Machine Learning models can be large and take a moment to
 // get everything needed to run.
-const createHandLandmarker = async () => {
-    const vision = await FilesetResolver.forVisionTasks("./wasm");
-    handLandmarker = await HandLandmarker.createFromOptions(vision, {
+const createGestureRecognizer = async () => {
+    const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+    );
+    gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
         baseOptions: {
-            modelAssetPath: `./models/hand_landmarker.task`,
+            modelAssetPath:
+                "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
             delegate: "GPU"
         },
         runningMode: runningMode,
@@ -30,7 +33,8 @@ const createHandLandmarker = async () => {
     });
     document.getElementById("message").innerHTML += "done";
 };
-createHandLandmarker();
+createGestureRecognizer();
+
 /********************************************************************
 // Demo 2: Continuously grab image from webcam stream and detect it.
 ********************************************************************/
@@ -42,7 +46,7 @@ const hasGetUserMedia = () => { var _a; return !!((_a = navigator.mediaDevices) 
 // If webcam supported, add event listener to button for when user
 // wants to activate it.
 if (hasGetUserMedia()) {
-    enableWebcamButton = document.getElementById("start-button");
+    enableWebcamButton = document.getElementById("webcamButton");
     enableWebcamButton.addEventListener("click", enableCam);
 }
 else {
@@ -50,17 +54,15 @@ else {
 }
 // Enable the live webcam view and start detection.
 function enableCam(event) {
-    if (!handLandmarker) {
-        console.log("Wait! objectDetector not loaded yet.");
+    if (!gestureRecognizer) {
+        console.log("Wait! model file of Gesture Recognizer is not loaded yet.");
         return;
     }
     if (webcamRunning === true) {
         webcamRunning = false;
-        enableWebcamButton.innerText = "ENABLE PREDICTIONS";
     }
     else {
         webcamRunning = true;
-        enableWebcamButton.innerText = "DISABLE PREDICTIONS";
     }
     // getUsermedia parameters.
     const constraints = {
@@ -74,20 +76,20 @@ function enableCam(event) {
 }
 let lastVideoTime = -1;
 let results = undefined;
-console.log(video);
+
 async function predictWebcam() {
 
     // Now let's start detecting the stream.
     if (runningMode === "IMAGE") {
         runningMode = "VIDEO";
-        await handLandmarker.setOptions({ runningMode: "VIDEO" });
+        await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
     }
     let startTimeMs = performance.now();
     if (lastVideoTime !== video.currentTime) {
         lastVideoTime = video.currentTime;
-        results = handLandmarker.detectForVideo(video, startTimeMs);
+        results = gestureRecognizer.recognizeForVideo(video, startTimeMs);
     }
-    gotHands(results);
+    gotGestures(results);
     // canvasCtx.save();
     // canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     // if (results.landmarks) {
@@ -105,3 +107,4 @@ async function predictWebcam() {
         window.requestAnimationFrame(predictWebcam);
     }
 }
+

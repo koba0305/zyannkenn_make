@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
+
+<script src="baba.css"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>後出し負けジャンケン</title>
@@ -32,9 +34,9 @@
 	top: 50%;
 	left: 50%;
 	width: 90vw;
-	max-width: 360px;
+	max-width: 600px;
     padding: 20px;
-	height: 300px;
+	height: 430px;
 	background-color: #fff;
 	border-radius: 4px;
 	align-items: center;
@@ -50,56 +52,52 @@
 </head>
 <body>
   <h1>後出し負けジャンケン</h1>
-<label class="open" for="pop-up">ポップアップ表示</label>
+  <br>
+  <label class="open" for="pop-up">ゲーム説明</label>
 <input type="checkbox" id="pop-up">
 <div class="overlay">
 	<div class="window">
 		<label class="close" for="pop-up">閉じる</label>
-		<h4>ポップアップウィンドウ</h4>
-		<p>この窓が表示されている間は窓の外の操作はできません。ウィンドウを閉じて操作して下さい。</p>
+		<h4>ゲーム説明</h4>
+		<p>このゲームは表示されている手の負けとなる手を出すゲームです。<br><br>
+    画面に「パー」と表示されていたら、<br>あなたはグーを出した後そのまま、"エンターキーを押してください"。
+  <p>エンターキーを押すと、次の手が出されます。<br><br>
+    きちんと負けれた場合、背景が青色になります。<br>(ちなみに勝つと赤になります。意味はありません)<br><br>
+    これを三十秒間繰り返し、何回負けれたかをカウントします。<br>
+    ついでに正解数に応じて脳年齢もどきを算出します。
+    <br>
+    <br>
+  </div>
 	</div>
 </div>
-<br><br>
-  <button id="start-button" onclick="startGame()">スタート</button>
+  <br>
+  <br>  <br>
+  <button id="start-button" onclick="startGame()"><div id="webcamButton">スタート</div></button>
   <div id="game-container" style="display: none;">
     <div id="timer">30</div>
     <div id="hand-display">グー</div>
-    <div id="test1"></div>
     <div id="test"></div>
+    <div id="converted-value"></div>
   </div>
   <div id="output"></div>
   <div id="output1"></div>
-    <p id="message"></p>
+  <p id="message"></p>
 
-  
-
-    <div style="position: relative;">
-      <video id="webcam" style="position:absolute;left:0px;top:0px;width:50%;height:auto" autoplay playsinline></video>
-      <div id="canvas" style="position:absolute;left:0px;top:0px">
-      </div>
+  <div style="position: relative;">
+    <video id="webcam" style="transform: scaleX(-1);position:absolute;width:50%;height:auto" autoplay playsinline></video>
+    <div id="canvas" style="transform: scaleX(-1);position:absolute;left:0px;top:0px">
     </div>
-
-
-    <script src="./js/drawing_utils.js" crossorigin="anonymous"></script>
-    <script src="./js/hands.js" crossorigin="anonymous"></script>
-    <script src="./js/p5.js"></script>
-    <script src="./js/sketch.js"></script>
-    <script type="module" src="./js/script.js"></script>
-
-
-
+  </div>
   <script>
     let timerInterval;
     let countdown;
     let losses;
-    let brainAge;
 
     function startGame() {
       document.getElementById("start-button").disabled = true;
       document.getElementById("game-container").style.display = "block";
       document.getElementById("output").innerHTML = "";
       losses = 0;
-      brainAge = 80;
       countdown = 30;
       updateTimer();
       timerInterval = setInterval(updateTimer, 1000);
@@ -130,17 +128,16 @@
       if (losses <= 3) {
         brainAge = 80;
       } else {
-        brainAge = Math.max(20, 80 - Math.floor(losses / 2));
+        brainAge = Math.max(20, 80 - losses * 2.5);
       }
 
-      document.getElementById("output").innerText = `脳年齢: ${brainAge}歳`;
-      document.getElementById("start-button").disabled = false;
+      document.getElementById("output").innerText = `脳年齢もどき: ${brainAge}歳`;
+  
       document.getElementById("output1").innerText = `負けた回数: ${losses}`;
       document.getElementById("start-button").disabled = false;
     }
 
     function checkLose(userHand, cpuHand) {
-      document.getElementById("test1").innerText= userHand;
       if (
         (userHand === "Closed_Fist" && cpuHand === "パー") ||
         (userHand === "Open_Palm" && cpuHand === "チョキ") ||
@@ -150,31 +147,49 @@
       }
       return false;
     }
+
+
     function handleKeyDown(event) {
       if (event.keyCode === 13) {
-        const userHand = document.getElementById("test").innerText.trim();
+        const userHand = document.getElementById("test").innerText;
         const cpuHand = document.getElementById("hand-display").innerText;
         const isLose = checkLose(userHand, cpuHand);
         if (isLose) {
-          document.getElementById("timer").style.backgroundColor = "blue";
+          document.getElementById("test").style.backgroundColor = "blue";
           setTimeout(function() {
-            document.getElementById("timer").style.backgroundColor = "white";
+            document.getElementById("test").style.backgroundColor = "white";
           }, 800);
           losses++;
         } else {
-          document.getElementById("timer").style.backgroundColor = "red";
+          document.getElementById("test").style.backgroundColor = "red";
           setTimeout(function() {
-            document.getElementById("timer").style.backgroundColor = "white";
+            document.getElementById("test").style.backgroundColor = "white";
           }, 800);
         }
         showRandomHand();
       }
     }
+    
   </script>
-
-
-
-
   </body>
+  </html>
+  
 
+ 
+  <script src="./js/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="./js/hands.js" crossorigin="anonymous"></script>
+  <script src="./js/p5.js"></script>
+  <script src="./js/sketch.js"></script>
+  <script type="module" src="./js/script.js"></script>
+ 
+
+
+
+<link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+<script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+
+</body>
 </html>
