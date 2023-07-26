@@ -2,7 +2,6 @@
 <html lang="ja">
 <head>
 
-<script src="baba.css"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>後出し負けジャンケン</title>
@@ -60,8 +59,8 @@
 		<label class="close" for="pop-up">閉じる</label>
 		<h4>ゲーム説明</h4>
 		<p>このゲームは表示されている手の負けとなる手を出すゲームです。<br><br>
-    画面に「パー」と表示されていたら、<br>あなたはグーを出した後そのまま、"エンターキーを押してください"。
-  <p>エンターキーを押すと、次の手が出されます。<br><br>
+    画面に「パー」と表示されていたら、<br>あなたはグーを出した後そのまま、"判定ボタンを押してください"。
+  <p>判定ボタンを押すと、次の手が出されます。<br>(pcの場合エンターキーでもできます)<br>
     きちんと負けれた場合、背景が青色になります。<br>(ちなみに勝つと赤になります。意味はありません)<br><br>
     これを三十秒間繰り返し、何回負けれたかをカウントします。<br>
     ついでに正解数に応じて脳年齢もどきを算出します。
@@ -75,6 +74,7 @@
   <button id="start-button" onclick="startGame()"><div id="webcamButton">スタート</div></button>
   <div id="game-container" style="display: none;">
     <div id="timer">30</div>
+    <button onclick="checkResult()">判定</button>
     <div id="hand-display">グー</div>
     <div id="test"></div>
     <div id="converted-value"></div>
@@ -169,7 +169,28 @@
         showRandomHand();
       }
     }
+
+ 
     
+    function checkResult() {
+      const userHand = document.getElementById("test").innerText;
+        const cpuHand = document.getElementById("hand-display").innerText;
+        const isLose = checkLose(userHand, cpuHand);
+        if (isLose) {
+          document.getElementById("test").style.backgroundColor = "blue";
+          setTimeout(function() {
+            document.getElementById("test").style.backgroundColor = "white";
+          }, 800);
+          losses++;
+        } else {
+          document.getElementById("test").style.backgroundColor = "red";
+          setTimeout(function() {
+            document.getElementById("test").style.backgroundColor = "white";
+          }, 800);
+        }
+        showRandomHand();
+}
+
   </script>
   </body>
   </html>
